@@ -1,0 +1,102 @@
+---
+title: "Initial Look at the Raw Data"
+author: "Aleksander Dietrichson, PhD"
+date: "2/27/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(geosphere)
+library(ggplot2)
+```
+
+
+```{r}
+raw_data_path <- here::here("raw-data","ships.csv")
+file.exists(raw_data_path)
+raw_data <- readr::read_csv(raw_data_path, guess_max = Inf ) 
+```
+
+## Variables
+```{r}
+str(raw_data)
+```
+
+
+## Check for Duplicates
+
+```{r}
+my_dups <- duplicated(raw_data)
+sum(my_dups)
+```
+
+Given the actual requirements for this project, these duplicates are probably of little consequence, however, we should probably remove them to be on the safe side. Furthermore looking an analysis of the duplicates themselves may help shed light on the reason for their existence - this is, however, beyond the scope of this project.
+
+### Removing duplicates
+
+```{r}
+raw_data <- raw_data[!my_dups,]
+```
+
+## SHIP_ID
+
+Because of its name, this variable intuitively looks like a unique identifier. While the requirements only mentions "ship name", it may be worth exploring the relationship between these two variables.
+
+```{r}
+# Quick and dirty test. The two numbers could be equal by coincidence.
+raw_data$SHIP_ID %>% unique %>% length
+raw_data$SHIPNAME %>% unique %>% length
+```
+
+OK, so there are at least some inconsistency here. Let's explore further. Firstly the counts above indicate that some SHIP_IDs share the same name. 
+
+```{r}
+tmpDF <- raw_data %>% 
+  group_by(SHIPNAME) %>% 
+  summarize(
+    n_ids = n_distinct(SHIP_ID)
+  ) %>% filter(n_ids>1)
+tmpDF
+```
+
+So it looks like we have douple ids for nineteen actual vessels, and then a "[SAT-AIS]" alternatively "SAT AIS". The latter is presumably an acronym for "Satelite Automatic Identification System", which is likely not the name of a vessel. We will therefore remove the corresponding datapoints. 
+
+Working off of the common sense (but by us unverified) notion that ship-names are likely required to be unique within each sovereign nations ship's registry we can attempt to use the "FLAG" variable to unpack this a little further.
+
+```{r}
+tmpDF2 <- raw_data %>% 
+  group_by(SHIPNAME, FLAG) %>% 
+  tally %>% 
+  filter(SHIPNAME %in% tmpDF$SHIPNAME,
+         !SHIPNAME %in% c("SAT AIS","[SAT-AIS]"))
+ tmpDF2 
+```
+
+Our intuition seems to have been justified for most of the data, we still do have some duplicates unaccounted for:
+
+```{r}
+tmpDF3 <- 
+  tmpDF2 %>% 
+  group_by(SHIPNAME) %>% 
+  summarize(n=n()) %>% 
+  filter(n<2)
+tmpDF3
+```
+
+Perhaps we can take a look at other characteristics to unravel this:
+
+```{r}
+tmpDF4 <- raw_data %>% 
+  filter(SHIPNAME %in% tmpDF3$SHIPNAME,
+         !duplicated(SHIP_ID)) %>% 
+  arrange(SHIPNAME) %>% 
+  select(SHIPNAME, SHIP_ID,PORT,port,ship_type,everything())
+tmpDF4
+```
+
+We can see that these are clearly not the same vessels, so we will arbitrarily add a "II" to the one with the highest SHIP_ID.
+
