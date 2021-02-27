@@ -159,8 +159,32 @@ Based on the physical characteristics it looks like it may well be the same vess
 ```{r}
 raw_data %>% 
   filter(SHIP_ID == 347195) %>% 
+  arrange(DATETIME) %>% 
   ggplot(aes(LON,LAT, color = SHIPNAME))+
-  geom_point()
+  geom_line()
 ```
 
 Based on the incontinuity observed, we might reasonably conclude that these are different vessels, although perhaps we are dealing with a submarine?
+
+
+Let's take a look at the BLACKPEARLs as well:
+
+```{r}
+raw_data %>% 
+  filter(startsWith(SHIPNAME,"BLACKPEARL")) %>% 
+  arrange(DATETIME) %>% 
+  ggplot(aes(LON,LAT, color = SHIPNAME))+
+  geom_line()
+```
+
+Discontinuity here as well. 
+
+Sanity check:
+```{r}
+raw_data %>% 
+  filter(SHIP_ID == 757619) %>% 
+  arrange(DATETIME) %>% 
+  ggplot(aes(LON,LAT, color = SHIPNAME))+
+  geom_line()
+```
+
