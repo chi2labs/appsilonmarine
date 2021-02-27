@@ -188,3 +188,6 @@ raw_data %>%
   geom_line()
 ```
 
+## Conclusions
+
+Some data-cleansing is needed prior to using this data.
