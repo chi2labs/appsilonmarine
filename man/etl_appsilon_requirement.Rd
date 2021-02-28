@@ -7,7 +7,7 @@
 etl_appsilon_requirement(ships_data)
 }
 \arguments{
-\item{ships_data}{Data.frame with columns (SHIPNAME, SHIP_ID, DATETIME, LON, LAT)}
+\item{ships_data}{Data.frame with columns (SHIPNAME, DATETIME, LON, LAT)}
 }
 \value{
 data.frame
