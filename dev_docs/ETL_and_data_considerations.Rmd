@@ -1,0 +1,91 @@
+---
+title: "Post-hoc Analysis of Pre-Calculated Data"
+author: "Aleksander Dietrichson, PhD"
+date: "2/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(geosphere)
+library(dplyr)
+```
+
+
+
+## ETL function
+```{r}
+etl_appsilon_requirement <- function(ships_data) {
+  
+  data <- ships_data %>% 
+    group_by(SHIP_ID, SHIPNAME) %>% 
+    arrange(DATETIME, .by_group = TRUE) %>% mutate(prev_lon = lag(LON, default = NA),
+                                 prev_lat = lag(LAT, default = NA),
+                                 prev_datetime = lag(DATETIME, default = NA),
+                                 seconds_btw_obs = difftime(DATETIME, prev_datetime, units = "secs")) %>%
+    rowwise() %>%
+    mutate(advanced_meters = ifelse(!is.na(prev_lat),
+                                    round(first(distm(c(prev_lon, prev_lat),
+                                                      c(LON, LAT),
+                                                      fun=distHaversine),
+                                    ), 2),
+                                    0)) %>% 
+    ungroup() %>% 
+    arrange(SHIP_ID, DATETIME)
+  
+  data %>% arrange(desc(advanced_meters)) %>% group_by(SHIP_ID, SHIPNAME) %>% slice(1)
+}
+```
+
+```{r}
+raw_data_path <- here::here("raw-data","ships.csv")
+file.exists(raw_data_path)
+
+```
+
+```{r}
+raw_data <- readr::read_csv(raw_data_path, guess_max = Inf ) #Set guess_max = Inf to avoid integers encoded as double
+```
+
+```{r}
+nrow(myData)
+```
+
+## Speed test save/load
+```{r}
+tempfile1 <- tempfile()
+readr::write_rds(myData,tempfile1)
+
+system.time(test1 <- readr::read_rds(tempfile1))
+
+identical(myData,test1)
+```
+
+OK, should add no noticable latency
+
+## Sanity test
+```{r}
+names(myData)
+```
+
+
+```{r}
+myData$advanced_meters %>% range()
+myData$seconds_btw_obs %>% range()
+```
+
+```{r}
+myData %>% filter(is.na(seconds_btw_obs))
+```
+
+```{r}
+myData %>% filter(is.na(seconds_btw_obs)) %>% pull(SHIP_ID)
+```
+
+
+```{r}
+meters_per_second <- myData$advanced_meters/as.integer(myData$seconds_btw_obs)
+
+range(meters_per_second, na.rm = TRUE)
+```
+

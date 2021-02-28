@@ -13,7 +13,9 @@ mod_marine_server(input, output, session, ships)
 
 \item{session}{Internal parameters for {shiny}.}
 
-\item{ships}{- Data.frame with ships information}
+\item{ships}{\itemize{
+\item Data.frame with ships information
+}}
 }
 \description{
 Marine Server Function

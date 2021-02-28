@@ -8,7 +8,7 @@
 #' - The previous and current coord.
 #' - The time between the both observations (in seconds).
 #'
-#' @param ships_data Data.frame with columns (SHIPNAME, DATETIME, LON,LAT)
+#' @param ships_data Data.frame with columns (SHIPNAME, DATETIME, LON, LAT)
 #' @return data.frame
 #' @import dplyr
 #' @importFrom geosphere distm distHaversine
@@ -17,7 +17,7 @@
 etl_appsilon_requirement <- function(ships_data) {
 
   data <- ships_data %>%
-    group_by(.data$SHIP_ID) %>%
+    group_by(.data$SHIPNAME) %>%
     arrange(.data$DATETIME, .by_group = TRUE) %>% mutate(prev_lon = lag(.data$LON, default = NA),
                                                    SHIPNAME = first(.data$SHIPNAME), # We found SHIPS with same ID and different name.
                                                    prev_lat = lag(.data$LAT, default = NA),
@@ -31,10 +31,10 @@ etl_appsilon_requirement <- function(ships_data) {
                                     ), 2),
                                     0)) %>%
     ungroup() %>%
-    arrange(.data$SHIP_ID, .data$DATETIME)
+    arrange(.data$SHIPNAME, .data$DATETIME)
 
   data %>% arrange(desc(.data$advanced_meters), .data$prev_datetime) %>%
-    group_by(.data$SHIP_ID, .data$SHIPNAME) %>%
+    group_by( .data$SHIPNAME ) %>%
     slice(1) %>%
     mutate(speed_kmh = .data$advanced_meters / (as.integer(.data$seconds_btw_obs) / 3.6))
 }
