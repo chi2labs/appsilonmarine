@@ -1,14 +1,12 @@
-#' marine UI Function
+#' Marine UI Function
 #'
-#' @description A shiny Module.
+#' @description Marine UI Module, show dropdowns to select a vessel and show in
+#' a map.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
-#'
-#' @importFrom shiny NS tagList
-#' @import dplyr
-#' @import leaflet
-#' @import shiny
-#' @import DT
+#' @param id Internal parameters for {shiny}.
+#' @importFrom shiny NS div
+#' @importFrom leaflet leafletOutput
+#' @importFrom DT dataTableOutput
 #' @import shiny.semantic
 #' @author Pablo Pagnone
 #' @export
@@ -57,16 +55,17 @@ mod_marine_ui <- function(id){
   )
 }
 
-#' marine Server Function
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' Marine Server Function
+#' @param input Internal parameters for {shiny}.
+#' @param output Internal parameters for {shiny}.
+#' @param session Internal parameters for {shiny}.
 #' @param ships - Data.frame with ships information
 #' @import dplyr
 #' @import leaflet
-#' @import shiny
-#' @import DT
+#' @importFrom shiny validate reactive callModule
+#' @importFrom DT renderDataTable
 #' @import shiny.semantic
-#' @import readr
-#' @import geosphere
+#' @importFrom rlang .data
 #' @author Pablo Pagnone
 #' @export
 mod_marine_server <- function(input, output, session, ships){
@@ -76,17 +75,26 @@ mod_marine_server <- function(input, output, session, ships){
   getData <- reactive({
     data <- ships
     if(dropdowns_mod$vessel_type != "All") {
-      data <- data %>% filter(ship_type == dropdowns_mod$vessel_type)
+      data <- data %>% filter(.data$ship_type == dropdowns_mod$vessel_type)
     }
     if(dropdowns_mod$vessel_id != "All") {
-      data <- data %>% filter(SHIP_ID == dropdowns_mod$vessel_id)
+      data <- data %>% filter(.data$SHIP_ID == dropdowns_mod$vessel_id)
     }
 
     data
   })
 
-  output$shipstable <- DT::renderDataTable(
-    getData() %>% select(SHIP_ID, SHIPNAME, DATETIME, LAT, LON, prev_datetime, prev_lat, prev_lon, advanced_meters, seconds_btw_obs),
+  output$shipstable <- renderDataTable(
+    getData() %>% select(.data$SHIP_ID,
+                         .data$SHIPNAME,
+                         .data$DATETIME,
+                         .data$LAT,
+                         .data$LON,
+                         .data$prev_datetime,
+                         .data$prev_lat,
+                         .data$prev_lon,
+                         .data$advanced_meters,
+                         .data$seconds_btw_obs),
     options = list(scrollX = TRUE),
     selection = "none",
     rownames = FALSE

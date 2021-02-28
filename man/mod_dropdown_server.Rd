@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_dropdown.R
 \name{mod_dropdown_server}
 \alias{mod_dropdown_server}
-\title{dropdown Server Function}
+\title{Dropdown Server Function}
 \usage{
 mod_dropdown_server(input, output, session, ships)
 }
@@ -16,7 +16,7 @@ mod_dropdown_server(input, output, session, ships)
 \item{ships}{- Data.frame with data to show in selects inputs.}
 }
 \description{
-dropdown Server Function
+Dropdown Server Function
 }
 \author{
 Pablo Pagnone

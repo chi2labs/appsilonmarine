@@ -1,22 +1,26 @@
 #' Map to show the ships position
 #'
 #' @param data Ships data.frame
+#' @param show_previous_position IF is true the map will show the previous place too.
 #' @import dplyr
 #' @import leaflet
+#' @importFrom htmltools HTML
+#' @importFrom rlang .data
 #' @return leaflet plot
 #' @export
 ship_position_map <- function(data, show_previous_position = FALSE){
 
+  browser()
   # Labels for each ship in map.
   data$labels <- sprintf(
     "<strong>%s</strong> <br />Distance Sailed (meters): %s",
     data$SHIPNAME, data$advanced_meters
-  ) %>% lapply(htmltools::HTML)
+  ) %>% lapply(HTML)
 
   data$labels_prev <- sprintf(
     "<strong>%s</strong> <br />Previous position",
     data$SHIPNAME
-  ) %>% lapply(htmltools::HTML)
+  ) %>% lapply(HTML)
 
   mapplot <- leaflet(data = data) %>%
     addTiles() %>%

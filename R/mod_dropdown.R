@@ -2,8 +2,8 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
-#' @importFrom shiny NS tagList
+#' @param id Internal parameters for {shiny}.
+#' @importFrom shiny NS tagList selectInput div
 #' @export
 mod_dropdown_ui <- function(id){
   ns <- NS(id)
@@ -13,13 +13,14 @@ mod_dropdown_ui <- function(id){
   )
 }
 
-#' dropdown Server Function
+#' Dropdown Server Function
 #' @param input Shiny Input
 #' @param output Shiny Output
 #' @param session Shiny session
 #' @param ships - Data.frame with data to show in selects inputs.
 #' @import dplyr
-#' @import shiny
+#' @importFrom shiny observe observeEvent updateSelectInput
+#' @importFrom rlang .data
 #' @author Pablo Pagnone
 #' @export
 mod_dropdown_server <- function(input, output, session, ships){
@@ -30,7 +31,7 @@ mod_dropdown_server <- function(input, output, session, ships){
 
   observe({
     # Change vessel_type input.
-    opt_type <- ships %>% ungroup() %>% distinct(ship_type) %>% arrange(ship_type) %>% pull()
+    opt_type <- ships %>% ungroup() %>% distinct(.data$ship_type) %>% arrange(.data$ship_type) %>% pull()
     updateSelectInput(session = session, inputId = "vessel_type", choices = c("All", opt_type))
   })
 
@@ -40,12 +41,12 @@ mod_dropdown_server <- function(input, output, session, ships){
 
     vessel <- ships
     if(!is.null(input$vessel_type) && input$vessel_type != "All") {
-      vessel <- vessel %>% filter(ship_type == input$vessel_type)
+      vessel <- vessel %>% filter(.data$ship_type == input$vessel_type)
     }
 
-    vessel_unique <- vessel %>% distinct(SHIPNAME, SHIP_ID) %>%
-      arrange(SHIPNAME) %>%
-      mutate(label = paste(SHIPNAME, sprintf("(%s)",SHIP_ID)))
+    vessel_unique <- vessel %>% distinct(.data$SHIPNAME, .data$SHIP_ID) %>%
+      arrange(.data$SHIPNAME) %>%
+      mutate(label = paste(.data$SHIPNAME, sprintf("(%s)", .data$SHIP_ID)))
 
     all <- "All"
     names(all) <- "All"

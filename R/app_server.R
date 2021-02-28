@@ -2,7 +2,8 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny
+#' @importFrom shiny callModule
+#' @importFrom readr read_rds
 #' @noRd
 app_server <- function( input, output, session ) {
   # Load data previously analyzed.

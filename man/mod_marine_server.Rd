@@ -2,17 +2,21 @@
 % Please edit documentation in R/mod_marine.R
 \name{mod_marine_server}
 \alias{mod_marine_server}
-\title{marine Server Function}
+\title{Marine Server Function}
 \usage{
 mod_marine_server(input, output, session, ships)
 }
 \arguments{
-\item{ships}{- Data.frame with ships information}
+\item{input}{Internal parameters for {shiny}.}
 
-\item{id, input, output, session}{Internal parameters for {shiny}.}
+\item{output}{Internal parameters for {shiny}.}
+
+\item{session}{Internal parameters for {shiny}.}
+
+\item{ships}{- Data.frame with ships information}
 }
 \description{
-marine Server Function
+Marine Server Function
 }
 \author{
 Pablo Pagnone
