@@ -164,8 +164,32 @@ raw_data %>%
   geom_line()
 ```
 
-Based on the incontinuity observed, we might reasonably conclude that these are different vessels, although perhaps we are dealing with a submarine?
+Based on the discontinuity observed, we might reasonably conclude that these are different vessels, although perhaps we are dealing with a submarine?
 
+
+Another possibility is that the vessel switched calling signals, and switched off the AIS in some time periods. We can look at this by using the "date" field available:
+
+```{r}
+raw_data %>% 
+ filter(SHIP_ID == 347195) %>%      
+  arrange(DATETIME) %>% 
+  group_by(SHIPNAME, date) %>% 
+  summarize(n=n())
+```
+
+And visualize over time:
+
+```{r}
+
+raw_data %>% 
+ filter(SHIP_ID == 347195) %>% 
+  mutate(date_hour = round(DATETIME,units="hours")) %>% 
+  mutate(date_hour = as.POSIXct(date_hour)) %>% #For my version of ggplot
+  ggplot(aes(date_hour,fill=SHIPNAME))+
+  geom_bar()
+```
+
+The data are congruent with the vessel switching off their AIS and switching calling signals. We will treat these as different vessels for the purposes of this exercise.
 
 Let's take a look at the BLACKPEARLs as well:
 
@@ -188,6 +212,16 @@ raw_data %>%
   geom_line()
 ```
 
+Looks like a misspelling
+
 ## Conclusions
 
-Some data-cleansing is needed prior to using this data.
+Some data-cleansing is needed prior to using this data. This consists is:
+
+* Removing duplicates
+* Removing instances of "[SAT-AIS]" and "SAT AIS"
+* Adding FLAG to the names of twenty-six ships with similar names, but different flags.
+* Correcting the presumed misspellings of certain ship-names.
+* Adding FLAG designation to "ARGO" and "C".
+* Arbitrarily adding a I & II designation to about ten ships with similar names, same flag, but different types and/or other characteristics.
+* Arbitrarily treating GAZPROM WEST and VOVAN as separate vessels (although we have our doubts).
