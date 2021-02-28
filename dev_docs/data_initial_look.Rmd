@@ -1,0 +1,193 @@
+---
+title: "Initial Look at the Raw Data"
+author: "Aleksander Dietrichson, PhD"
+date: "2/27/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(geosphere)
+library(ggplot2)
+```
+
+
+```{r}
+raw_data_path <- here::here("raw_data","ships.csv")
+
+if(!file.exists(raw_data_path)){
+  #Unzip
+  utils::unzip(here::here("raw_data","ships_data.zip"),exdir=here::here("raw_data"))
+}
+
+raw_data <- readr::read_csv(raw_data_path, guess_max = Inf ) 
+```
+
+## Variables
+```{r}
+str(raw_data)
+```
+
+
+## Check for Duplicates
+
+```{r}
+my_dups <- duplicated(raw_data)
+sum(my_dups)
+```
+
+Given the actual requirements for this project, these duplicates are probably of little consequence, however, we should probably remove them to be on the safe side. Furthermore looking an analysis of the duplicates themselves may help shed light on the reason for their existence - this is, however, beyond the scope of this project.
+
+### Removing duplicates
+
+```{r}
+raw_data <- raw_data[!my_dups,]
+```
+
+## SHIP_ID
+
+Because of its name, this variable intuitively looks like a unique identifier. While the requirements only mentions "ship name", it may be worth exploring the relationship between these two variables.
+
+```{r}
+# Quick and dirty test. The two numbers could be equal by coincidence.
+raw_data$SHIP_ID %>% unique %>% length
+raw_data$SHIPNAME %>% unique %>% length
+```
+
+OK, so there are at least some inconsistency here. Let's explore further. Firstly the counts above indicate that some SHIP_IDs share the same name. 
+
+```{r}
+tmpDF <- raw_data %>% 
+  group_by(SHIPNAME) %>% 
+  summarize(
+    n_ids = n_distinct(SHIP_ID)
+  ) %>% filter(n_ids>1)
+tmpDF
+```
+
+So it looks like we have double ids for nineteen actual vessels, and then a "[SAT-AIS]" alternatively "SAT AIS". The latter is presumably an acronym for "Satelite Automatic Identification System", which is likely not the name of a vessel. We will therefore remove the corresponding data-points. 
+
+Working off of the common sense (but by us unverified) notion that ship-names are likely required to be unique within each sovereign nations ship's registry we can attempt to use the "FLAG" variable to unpack this a little further.
+
+```{r}
+tmpDF2 <- raw_data %>% 
+  group_by(SHIPNAME, FLAG) %>% 
+  tally %>% 
+  filter(SHIPNAME %in% tmpDF$SHIPNAME,
+         !SHIPNAME %in% c("SAT AIS","[SAT-AIS]"))
+ tmpDF2 
+```
+
+Our intuition seems to have been justified for most of the data, we still do have some duplicates unaccounted for:
+
+```{r}
+tmpDF3 <- 
+  tmpDF2 %>% 
+  group_by(SHIPNAME) %>% 
+  summarize(n=n()) %>% 
+  filter(n<2)
+tmpDF3
+```
+
+Perhaps we can take a look at other characteristics to unravel this:
+
+```{r}
+tmpDF4 <- raw_data %>% 
+  filter(SHIPNAME %in% tmpDF3$SHIPNAME,
+         !duplicated(SHIP_ID)) %>% 
+  arrange(SHIPNAME) %>% 
+  select(SHIPNAME, SHIP_ID,PORT,port,ship_type,everything())
+tmpDF4
+```
+
+We can see that these are clearly not the same vessels. In some cases they are different "types", in other they are the same types, but have significantly different length, width and other characteristics. We will arbitrarily add a "II" to the one with the highest SHIP_ID.
+
+## SHIPNAME
+
+We should also look at the opposite case, i.e. check is any of the SHIP_IDs correspond to multiple names.
+
+```{r}
+tmpDF5 <- raw_data %>% 
+  group_by(SHIP_ID) %>% 
+  summarize(
+    n_names = n_distinct(SHIPNAME)
+  ) %>% filter(n_names > 1 )
+tmpDF5
+```
+
+We have a similar problem. Let's take a look.
+
+```{r}
+tmpDF6 <- raw_data %>% 
+  filter(SHIP_ID %in% tmpDF5$SHIP_ID) %>% 
+  group_by(SHIPNAME,SHIP_ID) %>% 
+  summarize() %>% 
+  arrange(SHIP_ID)
+
+tmpDF6
+```
+
+Most of these look like spelling variation of the same name. We happen to know that BBAS and ODYS is actually the same vessel. The only ones that stand out are the combinations:
+
+* GAZPROMNEFT WEST	& VOVAN
+* ARGO & C
+
+```{r}
+
+raw_data %>% 
+  filter( SHIP_ID%in%tmpDF6$SHIP_ID) %>% 
+  group_by(SHIPNAME,SHIP_ID, FLAG) %>% 
+  summarize() %>% arrange(SHIP_ID)
+```
+
+"ARGO" and "C" have different flags, so we can use that to separate them. A name like "C" however sounds odd, and we would need domain expertise in order to determine if this is a data-entry mistake or in fact the vessels real name.
+
+Finally it is still whether GAZPROMNEFT WEST	& VOVAN is the same vessel.
+
+```{r}
+raw_data %>% 
+  filter(SHIP_ID == 347195,
+         !duplicated(SHIPNAME)
+         )
+```
+
+Based on the physical characteristics it looks like it may well be the same vessel, maybe a visualization can help. Let's trace their respective courses.
+
+```{r}
+raw_data %>% 
+  filter(SHIP_ID == 347195) %>% 
+  arrange(DATETIME) %>% 
+  ggplot(aes(LON,LAT, color = SHIPNAME))+
+  geom_line()
+```
+
+Based on the incontinuity observed, we might reasonably conclude that these are different vessels, although perhaps we are dealing with a submarine?
+
+
+Let's take a look at the BLACKPEARLs as well:
+
+```{r}
+raw_data %>% 
+  filter(startsWith(SHIPNAME,"BLACKPEARL")) %>% 
+  arrange(DATETIME) %>% 
+  ggplot(aes(LON,LAT, color = SHIPNAME))+
+  geom_line()
+```
+
+Discontinuity here as well. 
+
+Sanity check:
+```{r}
+raw_data %>% 
+  filter(SHIP_ID == 757619) %>% 
+  arrange(DATETIME) %>% 
+  ggplot(aes(LON,LAT, color = SHIPNAME))+
+  geom_line()
+```
+
+## Conclusions
+
+Some data-cleansing is needed prior to using this data.
