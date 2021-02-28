@@ -16,21 +16,45 @@
 mod_marine_ui <- function(id){
   ns <- NS(id)
   semanticPage(
-    div(class = "ui raised segment",
-        div(
-          h1("Ships")
+    tags$head(
+      tags$link(rel = "stylesheet", href = "css/styles.css")
+    ),
+    title = "Appsilon Marine",
+    # Defining grid
+    grid(
+      id = "marine_grid",
+      grid_template = grid_template(
+        default = list(
+          areas = rbind(
+            c("title", "map"),
+            c("dropdowns", "map")
+          ),
+          cols_width = c("400px", "1fr"),
+          rows_height = c("50px", "auto")
         ),
-        div(
-          mod_dropdown_ui(ns("dropdown_ui_1"))
-        ),
-        div(
-          h2("Map"),
-          leaflet::leafletOutput(ns("map"))
-        ),
-        div(
-          DT::dataTableOutput(ns("shipstable"))
+        mobile = list(
+          areas = rbind(
+            "title",
+            "map",
+            "dropdowns"
+          ),
+          rows_height = c("70px", "400px", "auto"),
+          cols_width = c("100%")
         )
-    )
+      ),
+      area_styles = list(title = "margin: 20px;",
+                         dropdowns = "margin: 20px;",
+                         map = ""),
+
+      # Defining UI for each grid element
+      title = h2(class = "ui header",
+                 icon("ship"),
+                 div(class = "content", "Appsilon Marine")),
+      dropdowns = mod_dropdown_ui(id = ns("dropdown_ui_1")),
+      map = div(leaflet::leafletOutput(ns("map"), width = "auto"),
+                DT::dataTableOutput(ns("shipstable"), width = "auto")
+                ),
+    ),
   )
 }
 
@@ -55,37 +79,25 @@ mod_marine_server <- function(input, output, session, ships){
     if(dropdowns_mod$vessel_type != "All") {
       data <- data %>% filter(ship_type == dropdowns_mod$vessel_type)
     }
-    if(dropdowns_mod$vessel_name != "All") {
-      data <- data %>% filter(SHIPNAME == dropdowns_mod$vessel_name)
+    if(dropdowns_mod$vessel_id != "All") {
+      data <- data %>% filter(SHIP_ID == dropdowns_mod$vessel_id)
     }
+
     data
   })
 
   output$shipstable <- DT::renderDataTable(
-    getData(),
-    options = list(scrollX = TRUE)
+    getData() %>% select(SHIP_ID, SHIPNAME, DATETIME, LAT, LON, prev_datetime, prev_lat, prev_lon, advanced_meters, seconds_btw_obs),
+    options = list(scrollX = TRUE),
+    selection = "none",
+    rownames = FALSE
   )
 
   output$map <- leaflet::renderLeaflet({
-
     data <- getData()
-    # Labels for each ship in map.
-    data$labels <- sprintf(
-      "<strong>%s</strong> <br />Distance Sailed (meters): %s",
-      data$SHIPNAME,round(data$distance_sailed, 2)
-    ) %>% lapply(htmltools::HTML)
-
-    leaflet(data = data) %>%
-      addTiles() %>%
-      addCircleMarkers(lng = ~LON,
-                       lat = ~LAT,
-                       popup = ~as.character(SHIPNAME),
-                       label = ~labels,
-                       radius = 5,
-                       stroke = FALSE,
-                       fillOpacity = 1,
-                       color = "red"
-      )
+    validate(need(nrow(data) > 0, "Doesn't exist observations for this ship."))
+    ship_position_map(data,
+                      show_previous_position = ifelse(dropdowns_mod$vessel_id != "All", TRUE, FALSE))
   })
 
 }

@@ -9,7 +9,7 @@ mod_dropdown_ui <- function(id){
   ns <- NS(id)
   div(
     selectInput(inputId = ns("vessel_type"),label = "Type", choices = c("All")),
-    selectInput(inputId = ns("vessel_name"),label = "Name", choices = c("All"))
+    selectInput(inputId = ns("vessel_id"), label = "Name", choices = c("All"))
   )
 }
 
@@ -23,30 +23,40 @@ mod_dropdown_ui <- function(id){
 #' @author Pablo Pagnone
 #' @noRd
 mod_dropdown_server <- function(input, output, session, ships){
+
   values <- reactiveValues()
   values$vessel_type <- "All"
-  values$vessel_name <- "All"
+  values$vessel_id <- "All"
 
   observe({
-    opt_type <- ships %>% distinct(ship_type) %>% arrange(ship_type) %>% pull()
-    opt_name <- ships %>% distinct(SHIPNAME) %>% arrange(SHIPNAME) %>% pull()
+    # Change vessel_type input.
+    opt_type <- ships %>% ungroup() %>% distinct(ship_type) %>% arrange(ship_type) %>% pull()
     updateSelectInput(session = session, inputId = "vessel_type", choices = c("All", opt_type))
-    updateSelectInput(session = session, inputId = "vessel_name", choices = c("All", opt_name))
   })
 
   observeEvent(input$vessel_type, {
 
     values$vessel_type <- input$vessel_type
-    opt_name <- ships
+
+    vessel <- ships
     if(!is.null(input$vessel_type) && input$vessel_type != "All") {
-      opt_name <- opt_name %>% filter(ship_type == input$vessel_type)
+      vessel <- vessel %>% filter(ship_type == input$vessel_type)
     }
-    opt_name <- opt_name %>% distinct(SHIPNAME) %>% arrange(SHIPNAME) %>% pull()
-    updateSelectInput(session = session, inputId = "vessel_name", choices = c("All", opt_name))
+
+    vessel_unique <- vessel %>% distinct(SHIPNAME, SHIP_ID) %>%
+      arrange(SHIPNAME) %>%
+      mutate(label = paste(SHIPNAME, sprintf("(%s)",SHIP_ID)))
+
+    all <- "All"
+    names(all) <- "All"
+    opt_name <- vessel_unique$SHIP_ID
+    names(opt_name) <- vessel_unique$label
+
+    updateSelectInput(session = session, inputId = "vessel_id", choices =  c(all, opt_name))
   })
 
-  observeEvent(input$vessel_name, {
-    values$vessel_name <- input$vessel_name
+  observeEvent(input$vessel_id, {
+    values$vessel_id <- input$vessel_id
   })
 
   # Return reactive inputs
