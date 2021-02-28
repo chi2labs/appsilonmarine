@@ -4,8 +4,6 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd
-#'
 #' @importFrom shiny NS tagList
 #' @import dplyr
 #' @import leaflet
@@ -13,6 +11,7 @@
 #' @import DT
 #' @import shiny.semantic
 #' @author Pablo Pagnone
+#' @export
 mod_marine_ui <- function(id){
   ns <- NS(id)
   semanticPage(
@@ -61,7 +60,6 @@ mod_marine_ui <- function(id){
 #' marine Server Function
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param ships - Data.frame with ships information
-#' @noRd
 #' @import dplyr
 #' @import leaflet
 #' @import shiny
@@ -70,6 +68,7 @@ mod_marine_ui <- function(id){
 #' @import readr
 #' @import geosphere
 #' @author Pablo Pagnone
+#' @export
 mod_marine_server <- function(input, output, session, ships){
 
   dropdowns_mod <- callModule(mod_dropdown_server, "dropdown_ui_1", ships = ships)

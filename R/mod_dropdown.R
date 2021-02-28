@@ -3,8 +3,8 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @noRd
 #' @importFrom shiny NS tagList
+#' @export
 mod_dropdown_ui <- function(id){
   ns <- NS(id)
   div(
@@ -21,7 +21,7 @@ mod_dropdown_ui <- function(id){
 #' @import dplyr
 #' @import shiny
 #' @author Pablo Pagnone
-#' @noRd
+#' @export
 mod_dropdown_server <- function(input, output, session, ships){
 
   values <- reactiveValues()
