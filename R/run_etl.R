@@ -9,6 +9,6 @@ run_etl <- function(path_ship_csv){
 
   ships_data <- read_csv(path_ship_csv)
   final <- etl_appsilon_requirement(ships_data)
-  write_rds(final, system.file("data/ships.RDS", package="appsilonmarine"))
+  write_rds(final, system.file("app/shipsdata/ships.RDS", package="appsilonmarine"))
 
 }

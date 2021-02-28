@@ -4,7 +4,7 @@
 #' a map.
 #'
 #' @param id Internal parameters for {shiny}.
-#' @importFrom shiny NS div
+#' @importFrom shiny NS div h2 tags
 #' @importFrom leaflet leafletOutput
 #' @importFrom DT dataTableOutput
 #' @import shiny.semantic
@@ -62,7 +62,7 @@ mod_marine_ui <- function(id){
 #' @param ships - Data.frame with ships information
 #' @import dplyr
 #' @import leaflet
-#' @importFrom shiny validate reactive callModule
+#' @importFrom shiny validate reactive callModule need
 #' @importFrom DT renderDataTable
 #' @import shiny.semantic
 #' @importFrom rlang .data

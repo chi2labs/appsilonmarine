@@ -3,7 +3,8 @@
 #' @description A shiny Module.
 #'
 #' @param id Internal parameters for {shiny}.
-#' @importFrom shiny NS tagList selectInput div
+#' @importFrom shiny NS tagList div
+#' @import shiny.semantic
 #' @export
 mod_dropdown_ui <- function(id){
   ns <- NS(id)
@@ -19,8 +20,9 @@ mod_dropdown_ui <- function(id){
 #' @param session Shiny session
 #' @param ships - Data.frame with data to show in selects inputs.
 #' @import dplyr
-#' @importFrom shiny observe observeEvent updateSelectInput
+#' @importFrom shiny observe observeEvent reactiveValues
 #' @importFrom rlang .data
+#' @import shiny.semantic
 #' @author Pablo Pagnone
 #' @export
 mod_dropdown_server <- function(input, output, session, ships){

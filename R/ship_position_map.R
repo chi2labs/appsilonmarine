@@ -10,7 +10,6 @@
 #' @export
 ship_position_map <- function(data, show_previous_position = FALSE){
 
-  browser()
   # Labels for each ship in map.
   data$labels <- sprintf(
     "<strong>%s</strong> <br />Distance Sailed (meters): %s",
