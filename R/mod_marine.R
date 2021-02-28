@@ -6,16 +6,12 @@
 #' @param id Internal parameters for {shiny}.
 #' @importFrom shiny NS div h2 tags
 #' @importFrom leaflet leafletOutput
-#' @importFrom DT dataTableOutput
 #' @import shiny.semantic
 #' @author Pablo Pagnone
 #' @export
 mod_marine_ui <- function(id){
   ns <- NS(id)
   semanticPage(
-    tags$head(
-      tags$link(rel = "stylesheet", href = "css/styles.css")
-    ),
     title = "Appsilon Marine",
     # Defining grid
     grid(
@@ -47,10 +43,10 @@ mod_marine_ui <- function(id){
       title = h2(class = "ui header",
                  icon("ship"),
                  div(class = "content", "Appsilon Marine")),
-      dropdowns = mod_dropdown_ui(id = ns("dropdown_ui_1")),
-      map = div(leaflet::leafletOutput(ns("map"), width = "auto"),
-                DT::dataTableOutput(ns("shipstable"), width = "auto")
-                ),
+      dropdowns = div(mod_dropdown_ui(id = ns("dropdown_ui_1")),
+                      br(),
+                      uiOutput(ns("shipinfo"))),
+      map = div(leaflet::leafletOutput(ns("map"), width = "auto")),
     ),
   )
 }
@@ -62,8 +58,7 @@ mod_marine_ui <- function(id){
 #' @param ships - Data.frame with ships information
 #' @import dplyr
 #' @import leaflet
-#' @importFrom shiny validate reactive callModule need
-#' @importFrom DT renderDataTable
+#' @importFrom shiny validate reactive callModule need br
 #' @import shiny.semantic
 #' @importFrom rlang .data
 #' @author Pablo Pagnone
@@ -84,27 +79,43 @@ mod_marine_server <- function(input, output, session, ships){
     data
   })
 
-  output$shipstable <- renderDataTable(
-    getData() %>% select(.data$SHIP_ID,
-                         .data$SHIPNAME,
-                         .data$DATETIME,
-                         .data$LAT,
-                         .data$LON,
-                         .data$prev_datetime,
-                         .data$prev_lat,
-                         .data$prev_lon,
-                         .data$advanced_meters,
-                         .data$seconds_btw_obs),
-    options = list(scrollX = TRUE),
-    selection = "none",
-    rownames = FALSE
-  )
-
   output$map <- leaflet::renderLeaflet({
     data <- getData()
     validate(need(nrow(data) > 0, "Doesn't exist observations for this ship."))
     ship_position_map(data,
                       show_previous_position = ifelse(dropdowns_mod$vessel_id != "All", TRUE, FALSE))
+  })
+
+
+  output$shipinfo <- renderUI({
+
+    if(dropdowns_mod$vessel_id == "All") {
+      return()
+    }
+    data <- getData()
+
+    cards(
+      card(
+        div(class="content",
+            div(class="header", "Observation"),
+            br(),
+            div(class="meta", "Distance Sailed (meters)"),
+            div(class="description", data[1,]$advanced_meters),
+            br(),
+            div(class="meta", "Current Ubication"),
+            div(class="description", paste0(data[1,]$LAT, ", ", data[1,]$LON)),
+            br(),
+            div(class="meta", "Previous Ubication"),
+            div(class="description", paste0(data[1,]$prev_lat, ", ", data[1,]$prev_lon)),
+            br(),
+            div(class="meta", "Time between observations (secs)"),
+            div(class="description", data[1,]$seconds_btw_obs),
+            br(),
+            div(class="meta", "Speed between observations (Km/h)"),
+            div(class="description", round(data[1,]$speed_kmh, 2)),
+        )
+      )
+    )
   })
 
 }
