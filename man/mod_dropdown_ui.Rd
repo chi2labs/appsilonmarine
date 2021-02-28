@@ -7,7 +7,7 @@
 mod_dropdown_ui(id)
 }
 \arguments{
-\item{id, input, output, session}{Internal parameters for {shiny}.}
+\item{id}{Internal parameters for {shiny}.}
 }
 \description{
 A shiny Module.

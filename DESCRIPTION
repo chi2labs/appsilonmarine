@@ -6,7 +6,7 @@ Authors@R: c(
     person("Pablo", "Pagnone", role = c("aut", "cre"), email = "pablodp84@gmail.com"),
     person("Aleksander", "Dietrichson", role = c("aut"), email = "dietrichson@gmail.com")
     )
-Description: Provides a Shiny App using the marine information
+Description: Provides a Shiny App using the marine information.
 Imports: 
     config,
     golem,
@@ -19,7 +19,9 @@ Imports:
     geosphere, 
     leaflet,
     vdiffr,
-    testthat
+    testthat,
+    htmltools,
+    rlang
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

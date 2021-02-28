@@ -8,6 +8,8 @@ ship_position_map(data, show_previous_position = FALSE)
 }
 \arguments{
 \item{data}{Ships data.frame}
+
+\item{show_previous_position}{IF is true the map will show the previous place too.}
 }
 \value{
 leaflet plot
