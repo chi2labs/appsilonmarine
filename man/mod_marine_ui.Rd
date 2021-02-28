@@ -2,15 +2,16 @@
 % Please edit documentation in R/mod_marine.R
 \name{mod_marine_ui}
 \alias{mod_marine_ui}
-\title{marine UI Function}
+\title{Marine UI Function}
 \usage{
 mod_marine_ui(id)
 }
 \arguments{
-\item{id, input, output, session}{Internal parameters for {shiny}.}
+\item{id}{Internal parameters for {shiny}.}
 }
 \description{
-A shiny Module.
+Marine UI Module, show dropdowns to select a vessel and show in
+a map.
 }
 \author{
 Pablo Pagnone

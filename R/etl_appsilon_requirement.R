@@ -11,29 +11,30 @@
 #' @param ships_data Data.frame with columns (SHIPNAME, DATETIME, LON,LAT)
 #' @return data.frame
 #' @import dplyr
-#' @import geosphere
+#' @importFrom geosphere distm distHaversine
+#' @importFrom rlang .data
 #' @export
 etl_appsilon_requirement <- function(ships_data) {
 
   data <- ships_data %>%
-    group_by(SHIP_ID) %>%
-    arrange(DATETIME, .by_group = TRUE) %>% mutate(prev_lon = lag(LON, default = NA),
-                                                   SHIPNAME = first(SHIPNAME), # We found SHIPS with same ID and different name.
-                                                   prev_lat = lag(LAT, default = NA),
-                                                   prev_datetime = lag(DATETIME, default = NA),
-                                                   seconds_btw_obs = difftime(DATETIME, prev_datetime, units = "secs")) %>%
+    group_by(.data$SHIP_ID) %>%
+    arrange(.data$DATETIME, .by_group = TRUE) %>% mutate(prev_lon = lag(.data$LON, default = NA),
+                                                   SHIPNAME = first(.data$SHIPNAME), # We found SHIPS with same ID and different name.
+                                                   prev_lat = lag(.data$LAT, default = NA),
+                                                   prev_datetime = lag(.data$DATETIME, default = NA),
+                                                   seconds_btw_obs = difftime(.data$DATETIME, .data$prev_datetime, units = "secs")) %>%
     rowwise() %>%
-    mutate(advanced_meters = ifelse(!is.na(prev_lat),
-                                    round(first(distm(c(prev_lon, prev_lat),
-                                                      c(LON, LAT),
+    mutate(advanced_meters = ifelse(!is.na(.data$prev_lat),
+                                    round(first(distm(c(.data$prev_lon, .data$prev_lat),
+                                                      c(.data$LON, .data$LAT),
                                                       fun=distHaversine),
                                     ), 2),
                                     0)) %>%
     ungroup() %>%
-    arrange(SHIP_ID, DATETIME)
+    arrange(.data$SHIP_ID, .data$DATETIME)
 
-  data %>% arrange(desc(advanced_meters), prev_datetime) %>%
-    group_by(SHIP_ID, SHIPNAME) %>%
+  data %>% arrange(desc(.data$advanced_meters), .data$prev_datetime) %>%
+    group_by(.data$SHIP_ID, .data$SHIPNAME) %>%
     slice(1) %>%
-    mutate(speed_kmh = advanced_meters / (as.integer(seconds_btw_obs) / 3.6))
+    mutate(speed_kmh = .data$advanced_meters / (as.integer(.data$seconds_btw_obs) / 3.6))
 }
