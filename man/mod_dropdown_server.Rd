@@ -13,7 +13,9 @@ mod_dropdown_server(input, output, session, ships)
 
 \item{session}{Shiny session}
 
-\item{ships}{- Data.frame with data to show in selects inputs.}
+\item{ships}{\itemize{
+\item Data.frame with data to show in selects inputs.
+}}
 }
 \description{
 Dropdown Server Function

@@ -3,6 +3,7 @@ title: "Initial Look at the Raw Data"
 author: "Aleksander Dietrichson, PhD"
 date: "2/27/2021"
 output:
+  github_document: default
   pdf_document: default
   html_document: default
 ---

@@ -7,7 +7,7 @@
 etl_appsilon_requirement(ships_data)
 }
 \arguments{
-\item{ships_data}{Data.frame with columns (SHIPNAME, DATETIME, LON,LAT)}
+\item{ships_data}{Data.frame with columns (SHIPNAME, DATETIME, LON, LAT)}
 }
 \value{
 data.frame
@@ -15,10 +15,14 @@ data.frame
 \description{
 Objective:
 Return one observation by each ship filtering by:
-- The longest distance between two consecutive observations.(In meters).
+\itemize{
+\item The longest distance between two consecutive observations.(In meters).
+}
 }
 \details{
 and including:
-- The previous and current coord.
-- The time between the both observations (in seconds).
+\itemize{
+\item The previous and current coord.
+\item The time between the both observations (in seconds).
+}
 }
