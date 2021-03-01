@@ -13,6 +13,7 @@ mod_marine_ui <- function(id){
   ns <- NS(id)
   semanticPage(
     title = "Appsilon Marine",
+    tags$link(rel="stylesheet", type="text/css", href="www/css/styles.css"),
     # Defining grid
     grid(
       id = "marine_grid",
@@ -46,7 +47,7 @@ mod_marine_ui <- function(id){
       dropdowns = div(mod_dropdown_ui(id = ns("dropdown_ui_1")),
                       br(),
                       uiOutput(ns("shipinfo"))),
-      map = div(leaflet::leafletOutput(ns("map"), width = "auto")),
+      map = div(leaflet::leafletOutput(ns("map"), width = "auto", height = "580px")),
     ),
   )
 }
@@ -72,8 +73,8 @@ mod_marine_server <- function(input, output, session, ships){
     if(dropdowns_mod$vessel_type != "All") {
       data <- data %>% filter(.data$ship_type == dropdowns_mod$vessel_type)
     }
-    if(dropdowns_mod$vessel_id != "All") {
-      data <- data %>% filter(.data$SHIP_ID == dropdowns_mod$vessel_id)
+    if(dropdowns_mod$vessel_name != "All") {
+      data <- data %>% filter(.data$SHIPNAME == dropdowns_mod$vessel_name)
     }
 
     data
@@ -83,13 +84,13 @@ mod_marine_server <- function(input, output, session, ships){
     data <- getData()
     validate(need(nrow(data) > 0, "Doesn't exist observations for this ship."))
     ship_position_map(data,
-                      show_previous_position = ifelse(dropdowns_mod$vessel_id != "All", TRUE, FALSE))
+                      show_previous_position = ifelse(dropdowns_mod$vessel_name != "All", TRUE, FALSE))
   })
 
 
   output$shipinfo <- renderUI({
 
-    if(dropdowns_mod$vessel_id == "All") {
+    if(dropdowns_mod$vessel_name == "All") {
       return()
     }
     data <- getData()

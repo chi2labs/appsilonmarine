@@ -9,8 +9,8 @@
 mod_dropdown_ui <- function(id){
   ns <- NS(id)
   div(
-    selectInput(inputId = ns("vessel_type"),label = "Type", choices = c("All")),
-    selectInput(inputId = ns("vessel_id"), label = "Name", choices = c("All"))
+    selectInput(inputId = ns("vessel_type"),label = "Vessel Type", choices = c("All")),
+    selectInput(inputId = ns("vessel_name"), label = "Vessel Name", choices = c("All"))
   )
 }
 
@@ -29,7 +29,7 @@ mod_dropdown_server <- function(input, output, session, ships){
 
   values <- reactiveValues()
   values$vessel_type <- "All"
-  values$vessel_id <- "All"
+  values$vessel_name <- "All"
 
   observe({
     # Change vessel_type input.
@@ -46,20 +46,14 @@ mod_dropdown_server <- function(input, output, session, ships){
       vessel <- vessel %>% filter(.data$ship_type == input$vessel_type)
     }
 
-    vessel_unique <- vessel %>% distinct(.data$SHIPNAME, .data$SHIP_ID) %>%
-      arrange(.data$SHIPNAME) %>%
-      mutate(label = paste(.data$SHIPNAME, sprintf("(%s)", .data$SHIP_ID)))
+    vessel_names <- vessel %>% distinct(.data$SHIPNAME) %>%
+      arrange(.data$SHIPNAME) %>% pull
 
-    all <- "All"
-    names(all) <- "All"
-    opt_name <- vessel_unique$SHIP_ID
-    names(opt_name) <- vessel_unique$label
-
-    updateSelectInput(session = session, inputId = "vessel_id", choices =  c(all, opt_name))
+    updateSelectInput(session = session, inputId = "vessel_name", choices =  c("All", vessel_names))
   })
 
-  observeEvent(input$vessel_id, {
-    values$vessel_id <- input$vessel_id
+  observeEvent(input$vessel_name, {
+    values$vessel_name <- input$vessel_name
   })
 
   # Return reactive inputs
