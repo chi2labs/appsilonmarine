@@ -106,3 +106,4 @@ The textbook definition of *outlier* is any observation outside 1.5 times the in
 #### Conclusion
 
 We should probably decide that anything over 75 kilometers per hour is suspect, and indicate this in the interface. Pending another deep dive (again no pun...) in the data we have little reason to chalk this up as anything but "dirty raw data".
+
