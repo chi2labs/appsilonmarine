@@ -43,7 +43,7 @@ respectively.
   - devtools::test()
   - R CMD check
 
-## R & D documentation
+## R & D Documentation
 
 Some of the research and rationale for decisions made are documented in
 these three documents:
@@ -58,7 +58,7 @@ these three documents:
 These are available in the *dev\_doc* folder at the root level, along
 with the corresponding .Rmd files for reproducibility.
 
-## Cavaeats
+## Caveat
 
 All distance calculations were made using the
 [geosphere](https://cran.r-project.org/package=geosphere) package. We
