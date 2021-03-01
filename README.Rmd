@@ -53,7 +53,7 @@ respectively.
 * devtools::test()
 * R CMD check
 
-## R & D documentation
+## R & D Documentation
 
 Some of the research and rationale for decisions made are documented in these three documents:
 
