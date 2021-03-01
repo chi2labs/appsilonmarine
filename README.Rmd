@@ -64,6 +64,6 @@ Some of the research and rationale for decisions made are documented in these th
 These are available in the *dev_doc* folder at the root level, along with the corresponding .Rmd files for reproducibility.
 
 
-## Cavaeats
+## Caveat
 
 All distance calculations were made using the [geosphere](https://cran.r-project.org/package=geosphere) package. We have not independenlty verified the accuracy of these calculations.
