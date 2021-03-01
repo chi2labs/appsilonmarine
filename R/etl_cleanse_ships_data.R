@@ -2,10 +2,10 @@
 #' 
 #' Applies necessary cleansing of the ships_data provided by Appsilon. 
 #' For internal use to update the pre-calculated data in the package. 
-#' Currently the requirements are:
+#' For current requirements see details.
 #' 
 #' * Removing duplicates
-#' * Removing instances of [SAT-AIS] and "SAT AIS"
+#' * Removing instances of \[SAT-AIS\] and "SAT AIS"
 #' * Adding FLAG to the names of twenty-six ships with similar names, but different flags.
 #' * Correcting the presumed misspellings of certain ship-names.
 #' * Adding FLAG designation to "ARGO" and "C".

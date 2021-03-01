@@ -15,12 +15,12 @@ data.frame
 \description{
 Applies necessary cleansing of the ships_data provided by Appsilon.
 For internal use to update the pre-calculated data in the package.
-Currently the requirements are:
+For current requirements see details.
 }
 \details{
 \itemize{
 \item Removing duplicates
-\item Removing instances of \link{SAT-AIS} and "SAT AIS"
+\item Removing instances of [SAT-AIS] and "SAT AIS"
 \item Adding FLAG to the names of twenty-six ships with similar names, but different flags.
 \item Correcting the presumed misspellings of certain ship-names.
 \item Adding FLAG designation to "ARGO" and "C".

@@ -79,6 +79,9 @@ myData %>%
 
 The bulk (no pun intended) of our vessels have a completely reasonable speed. 
 
+
+#### Common-sense approach
+
 Let's try some cutoff points:
 
 ```{r}
@@ -91,4 +94,16 @@ myData %>%
 
 ```
 
+#### The Textbook approach
+
+```{r}
+quantile(myData$speed_kmh, na.rm = TRUE)[4]+
+  IQR(myData$speed_kmh, na.rm = TRUE)*1.5
+```
+
+The textbook definition of *outlier* is any observation outside 1.5 times the interquartile range. We se that this gives a value of rougly 95 km/h. The validity of this approach is questionable, however, since it assumes at least a quasi-normal distribution of the data, which we clearly do not have here. 
+
+#### Conclusion
+
 We should probably decide that anything over 75 kilometers per hour is suspect, and indicate this in the interface. Pending another deep dive (again no pun...) in the data we have little reason to chalk this up as anything but "dirty raw data".
+
