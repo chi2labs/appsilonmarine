@@ -1,0 +1,94 @@
+---
+title: "Post-hoc Analysis of Pre-Calculated Data"
+author: "Aleksander Dietrichson, PhD"
+date: "2/28/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(geosphere)
+library(dplyr)
+library(ggplot2)
+```
+
+
+
+## Purpose
+
+The purpose of this document is to analyze the pre-calculated data we are currently using for the shiny app. Looking at main variables as well as potential inconsitencies may help us uncover bugs, and provide further insights into the data, such as if further cleansing is needed.
+
+
+```{r}
+pre_calc_path <- here::here("inst","app","shipsdata","ships.RDS")
+myData <- readr::read_rds(pre_calc_path)
+raw_data <- readr::read_csv(here::here("raw_data","ships.csv"))
+```
+
+```{r}
+str(myData)
+```
+
+The tibble is "grouped" probably not necessary.
+
+## Calculated Speed
+
+We calculate the speed in kilometers per hour as part of the pre-calculations. This allows us a sanity check:
+
+```{r}
+range(myData$speed_kmh)
+```
+
+OK, we have some NA's. Let's find our how widespread this is
+
+```{r}
+myData %>% 
+  filter(is.na(speed_kmh)) %>% 
+  summarize()
+```
+
+Three instances. Let's confer with the raw data.
+
+
+```{r}
+my_shipnames <- myData %>% 
+           filter(is.na(speed_kmh)) %>% 
+           pull(SHIPNAME)
+raw_data %>% 
+  filter(SHIPNAME %in% my_shipnames)
+```
+
+So, we have three ships with only one observation in the raw data, and so nothing to base our calculations on. We might *consider removing* these from our pre-calculated data-set.
+
+
+Now lets look at the speed again:
+
+```{r}
+range(myData$speed_kmh, na.rm = TRUE)
+mean(myData$speed_kmh, na.rm = TRUE)
+median(myData$speed_kmh, na.rm = TRUE)
+```
+
+We clearly have some outliers, no vessel will travel at 3,000 kph!
+
+```{r}
+myData %>% 
+  ggplot(aes(speed_kmh))+
+  geom_histogram()
+```
+
+The bulk (no pun intended) of our vessels have a completely reasonable speed. 
+
+Let's try some cutoff points:
+
+```{r}
+myData %>% 
+  filter(speed_kmh>100) %>% nrow()
+myData %>% 
+  filter(speed_kmh>75) %>% nrow()
+myData %>% 
+  filter(speed_kmh>50) %>% nrow()
+
+```
+
+We should probably decide that anything over 75 kilometers per hour is suspect, and indicate this in the interface. Pending another deep dive (again no pun...) in the data we have little reason to chalk this up as anything but "dirty raw data".
